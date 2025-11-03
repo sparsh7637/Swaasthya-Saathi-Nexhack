@@ -9,7 +9,7 @@ def extract_first_json(text: str) -> dict:
         pass
 
     # 2) fenced ```json ... ```
-    m = re.search(r"```json\\s*(\\{[\\s\\S]*?\\})\\s*```", s, re.IGNORECASE)
+    m = re.search(r"```json\s*(\{[\s\S]*?\})\s*```", s, re.IGNORECASE)
     if m:
         try:
             return json.loads(m.group(1))
@@ -27,7 +27,7 @@ def extract_first_json(text: str) -> dict:
             pass
 
     # 4) <Answer>...</Answer> variant with optional fences
-    m = re.search(r"<Answer>\\s*(?:```json)?\\s*(\\{[\\s\\S]*?\\})\\s*(?:```)?\\s*</Answer>", s, re.IGNORECASE)
+    m = re.search(r"<Answer>\s*(?:```json)?\s*(\{[\s\S]*?\})\s*(?:```)?\s*</Answer>", s, re.IGNORECASE)
     if m:
         try:
             return json.loads(m.group(1))
