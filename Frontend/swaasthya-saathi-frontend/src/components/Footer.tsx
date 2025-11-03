@@ -61,7 +61,7 @@ const Footer = () => {
               <span>Made for India's healthcare future</span>
             </p>
             <p className="mt-2">
-              © 2024 Swaasthya Saathi. Supporting government healthcare initiatives.
+              © 2025 Swaasthya Saathi. Supporting government healthcare initiatives.
             </p>
           </div>
         </div>
