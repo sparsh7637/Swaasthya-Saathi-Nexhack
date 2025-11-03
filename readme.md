@@ -85,7 +85,7 @@ You can interact with the deployed bot via Twilio or our frontend:
 #### 2. Send a **prescription image** to begin
 #### 3. Select your preferred **language** via reply
 #### 4. Ask follow-up **voice note questions**
-#### 5. Visit our frontend portal here: [🌐 https://swaasthya-saathi-frontend.vercel.app](https://swaasthya-saathi-frontend.vercel.app)
+#### 5. Visit our frontend portal here: [🌐 https://swaasthya-saathi-three.vercel.app](https://swaasthya-saathi-three.vercel.app)
 ---
 
 ## 📸 How It Works
