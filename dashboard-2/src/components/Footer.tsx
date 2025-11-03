@@ -15,33 +15,6 @@ const Footer = () => {
           </div>
 
           {/* Links */}
-          <div className="flex justify-center gap-8">
-            <a
-              href="https://github.com/Mohit2005123"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-            >
-              <Github className="w-5 h-5" />
-              <span>GitHub</span>
-            </a>
-            <a
-              href="https://www.linkedin.com/in/sparsh-gulati-665032287"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-            >
-              <Linkedin className="w-5 h-5" />
-              <span>LinkedIn</span>
-            </a>
-            <a
-              href="mailto:contact@aidawaconnect.in"
-              className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-            >
-              <Mail className="w-5 h-5" />
-              <span>Contact</span>
-            </a>
-          </div>
 
           {/* Government partnership note */}
           <div className="bg-white/5 rounded-lg p-6 border border-white/10">
