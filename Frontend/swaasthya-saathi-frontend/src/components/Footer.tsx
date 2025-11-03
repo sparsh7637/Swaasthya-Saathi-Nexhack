@@ -16,35 +16,6 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* Links */}
-          <div className="flex justify-center space-x-8">
-            <a
-              href="https://github.com/Mohit2005123"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-2 text-white/70 hover:text-white transition-colors duration-300"
-            >
-              <Github className="w-5 h-5" />
-              <span className="font-inter">GitHub</span>
-            </a>
-            <a
-              href="https://www.linkedin.com/in/sparsh-gulati-665032287"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-2 text-white/70 hover:text-white transition-colors duration-300"
-            >
-              <Linkedin className="w-5 h-5" />
-              <span className="font-inter">LinkedIn</span>
-            </a>
-            <a
-              href="mailto:contact@aidawaconnect.in"
-              className="flex items-center space-x-2 text-white/70 hover:text-white transition-colors duration-300"
-            >
-              <Mail className="w-5 h-5" />
-              <span className="font-inter">Contact</span>
-            </a>
-          </div>
-
           {/* Government partnership note */}
           <div className="border-t border-white/20 pt-8">
             <div className="bg-white/5 rounded-lg p-6 border border-white/10">
