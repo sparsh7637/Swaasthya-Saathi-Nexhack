@@ -216,7 +216,7 @@ export const STRINGS = {
   hi: {
     ...BASE_STRINGS,
     title: "स्वास्थ्य साथी",
-    subtitle: "आपका स्वास्थ्य साथी",
+    subtitle: "सेहत की बात, आपके साथ",
     prescriptions: "पर्चे",
     hospitals: "अस्पताल",
     vitals: "वाइटल्स",
