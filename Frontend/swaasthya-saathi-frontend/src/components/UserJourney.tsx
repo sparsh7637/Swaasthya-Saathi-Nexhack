@@ -133,7 +133,7 @@ const UserJourney = () => {
               className="group"
             >
               <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              Try It Now - It's Free!
+              Try It Now
             </Button>
           </motion.div>
         </motion.div>
