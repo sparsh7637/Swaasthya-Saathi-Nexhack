@@ -12,6 +12,7 @@ import heroImage from '@/assets/hero-health.jpg';
 import prescriptionIcon from '@/assets/prescription-icon.jpg';
 import hospitalIcon from '@/assets/hospital-icon.jpg';
 import vitalsIcon from '@/assets/vitals-icon.jpg';
+import Footer from '@/components/Footer';
 
 const Index = () => {
   const { strings } = useLanguage();
@@ -251,6 +252,7 @@ const Index = () => {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 };
