@@ -47,7 +47,7 @@ const Navbar = () => {
       }`}
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between py-[6px] md:py-[10px]">
           {/* Brand */}
           <button
             aria-label="Go to Home"
