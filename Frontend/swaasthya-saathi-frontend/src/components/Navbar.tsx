@@ -54,9 +54,19 @@ const Navbar = () => {
             onClick={() => scrollToSection("hero")}
             className="group flex items-center gap-3 cursor-pointer"
           >
-            {/* Animated heart pulse icon */}
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/70 shadow-sm">
-              <HeartPulse className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+            {/* Brand Logo: New image with hover reveal to old logo */}
+            <span className="relative flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-xl bg-white/70 shadow-sm overflow-hidden p-1.5">
+              {/* New logo default */}
+              <img
+                src="/Frontend LOGO.png"
+                alt="Swaasthya Saathi logo"
+                className="absolute inset-0 w-full h-full object-cover scale-115 transition-opacity duration-300 group-hover:opacity-0"
+                draggable={false}
+              />
+              {/* Old logo on hover */}
+              <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <HeartPulse className="h-6 w-6 text-white" />
+              </span>
               <span className="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white animate-pulse" />
             </span>
 
