@@ -33,4 +33,4 @@ class AnswerQueryRequest(BaseModel):
 class AnswerQueryResponse(BaseModel):
     answer: str
     safety: dict
-    sources: list[str] = []
+    sources: list[str] = Field(default_factory=list)
