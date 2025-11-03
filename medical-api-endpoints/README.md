@@ -1,230 +1,250 @@
 
 # 🏥 Medical Assistant API
 
-This project is a **microservice-based medical assistant API** built with **FastAPI**, **LangChain**, and **Hugging Face-hosted models**. It helps:
+A production-ready FastAPI microservice that orchestrates two Hugging Face hosted LLMs via LangChain to:
 
-1. **Summarize prescriptions** into a clean structured JSON.
-2. **Answer patient queries** in simple, safe, and patient-friendly language — with special focus on **Indian medicines** and **rural healthcare needs**.
+- Summarize raw prescription OCR text into a structured JSON summary
+- Answer patient questions safely, optionally grounded by a prescription summary and India-specific medicine hints
 
----
-
-## 🚀 Features
-
-* **LangChain orchestration** with two models:
-
-  * `Intelligent-Internet/II-Medical-8B` → medical reasoning (draft responses in paragraphs).
-  * `gpt-oss` (configurable) → refines drafts into **structured JSON** for reliable output.
-* **Two API endpoints**:
-
-  * `/summarize-prescription`: Summarize OCR text of prescriptions into structured fields (medicines, dosage, frequency, instructions, advice).
-  * `/answer-query`: Answer natural language queries, using the prescription summary (if provided) and Indian-medicine context.
-* **Safety Layer**:
-
-  * Prefilter unsafe queries.
-  * Always append disclaimers and emergency contacts.
-* **Rural-friendly context**:
-
-  * Indian medicine database built-in.
-  * Handles queries in simple English/Hinglish.
+It focuses on Indian healthcare context, provides strong safety messaging, and validates all model outputs with Pydantic.
 
 ---
 
-## 🌐 Base URL
+## ✨ Highlights
 
-The API is deployed and publicly available here:
- **[https://medical-api-endpoints.onrender.com/](https://medical-api-endpoints.onrender.com/)**
+- **Two-stage orchestration** (LangChain): medical model → refiner → Pydantic validation
+- **Strict JSON contracts** for both endpoints; resilient JSON extraction
+- **Safety layer**: request prefiltering + mandatory disclaimer and emergency hint (India)
+- **Context enrichment**: built‑in Indian medicines hints; optional prescription summary context
+- **Observability**: Loguru logging with configurable log level; CORS configurable
 
 ---
 
-## 📂 Project Structure
+## 📦 Project Structure
 
 ```
-app/
- ├─ chains/
- │   ├─ prompts.py             # Prompt templates for medical & refiner models
- │   ├─ schemas.py             # Pydantic models for requests/responses
- │   ├─ safety.py              # Prefilter and safety footer
- │   ├─ retrieval.py           # Indian medicine hints
- │   ├─ medical_model.py       # Medical model draft chains
- │   └─ gpt_refiner.py         # Refiner model JSON-output chains
- │
- ├─ models/
- │   ├─ ii_medical_loader.py   # Hugging Face II-Medical-8B loader
- │   └─ gpt_ss_loader.py       # Hugging Face GPT-OSS refiner loader
- │
- ├─ utils/
- │   ├─ json_extract.py        # Robust JSON extraction helper
- │   └─ prescription_context.py# Flattens prescription summary into context lines
- │
- ├─ config.py                  # Env config
- ├─ logging_conf.py            # Loguru logging
- └─ main.py                    # FastAPI endpoints
+medical-api-endpoints/
+└─ app/
+   ├─ chains/
+   │  ├─ prompts.py              # Prompt templates
+   │  ├─ schemas.py              # Pydantic request/response models
+   │  ├─ safety.py               # Prefilter + safety footer
+   │  ├─ retrieval.py            # Lightweight Indian medicines hints
+   │  ├─ medical_model.py        # Medical model (draft paragraphs)
+   │  └─ gpt_refiner.py          # Refiner model (final strict JSON)
+   │
+   ├─ models/
+   │  ├─ ii_medical_loader.py    # HF: Intelligent-Internet/II-Medical-8B
+   │  └─ gpt_ss_loader.py        # HF: GPT‑OSS refiner (configurable repo)
+   │
+   ├─ utils/
+   │  ├─ json_extract.py         # Robust extractor for JSON from model text
+   │  └─ prescription_context.py # Flattens summary into context lines
+   │
+   ├─ config.py                  # Settings (pydantic-settings)
+   ├─ logging_conf.py            # Loguru configuration
+   └─ main.py                    # FastAPI app + routes
 ```
+
+See also: `DESIGN.md` for a short data-flow overview.
 
 ---
 
 ## ⚙️ Setup
 
-### 1. Clone and create venv
+### 1) Create a virtualenv and install deps
 
 ```bash
-git clone https://github.com/sparsh7637/medical-api-endpoints
-cd medical-assistant-api
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-```
+# Windows
+.venv\Scripts\activate
+# macOS/Linux
+source .venv/bin/activate
 
-### 2. Install dependencies
-
-```bash
-pip install --upgrade pip
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 3. Environment variables
+### 2) Configure environment
 
-Create `.env`:
+Create a `.env` file at repo root:
 
 ```ini
+# Required for HF Inference API
 HF_TOKEN=hf_xxx_your_token
-CORS_ORIGINS=*
+
+# Server
 APP_HOST=127.0.0.1
 APP_PORT=8080
+LOG_LEVEL=INFO
+
+# CORS (comma-separated) — use * during local dev only
+CORS_ORIGINS=*
 ```
 
-### 4. Run locally
+Notes:
+- The loaders use the Hugging Face Inference API via `langchain-huggingface`. Set `HF_TOKEN` accordingly.
+- `LOG_LEVEL` drives Loguru (e.g., DEBUG, INFO, WARNING, ERROR).
+
+### 3) Run locally
 
 ```bash
+uvicorn app.main:app --host %APP_HOST% --port %APP_PORT% --reload
+# or hardcode
 uvicorn app.main:app --host 127.0.0.1 --port 8080 --reload
 ```
 
+The server exposes OpenAPI at `/docs` and `/redoc`.
 
 ---
 
-## 📡 API Endpoints
+## 🔌 API Endpoints
 
-### `GET /health`
+### Health
 
-Quick liveness probe.
-**Response**
+GET `/health`
 
+Response:
 ```json
 {"status":"ok"}
 ```
 
 ---
 
-### `POST /summarize-prescription`
+### Summarize Prescription
 
-**Input**
+POST `/summarize-prescription`
 
+- Accepts OCR text and returns a structured summary validated against `PrescriptionSummary`.
+- Flow: safety prefilter → medical model draft → refiner JSON → JSON extraction → Pydantic validation.
+
+Request (schema = `SummarizeRequest`):
 ```json
 {
-  "text": "Patient: Suresh Kumar. Dx: Acute Gastritis. Rx: Pantocid D 40 mg OD before breakfast x 7 days; Sucralfate syrup 2 tsp TID before meals x 10 days; ORS powder as needed for dehydration."
+  "text": "Patient: Suresh Kumar. Dx: Acute Gastritis. Rx: Pantocid D 40 mg OD before breakfast x 7 days; Sucralfate syrup 2 tsp TID before meals x 10 days; ORS powder as needed."
 }
 ```
 
-**Response**
-
+Response (schema = `SummarizeResponse`):
 ```json
 {
   "summary": {
     "patient_name": "Suresh Kumar",
     "diagnosis_or_complaints": "Acute Gastritis",
     "medicines": [
-      {
-        "name": "Pantocid D",
-        "dosage": "40 mg",
-        "frequency": "once daily",
-        "duration": "7 days",
-        "instructions": "before breakfast"
-      },
-      {
-        "name": "Sucralfate syrup",
-        "dosage": "2 tsp",
-        "frequency": "three times daily",
-        "duration": "10 days",
-        "instructions": "before meals"
-      },
-      {
-        "name": "ORS powder",
-        "dosage": null,
-        "frequency": "as needed",
-        "duration": null,
-        "instructions": "for dehydration"
-      }
+      {"name": "Pantocid D", "dosage": "40 mg", "frequency": "once daily", "duration": "7 days", "instructions": "before breakfast"},
+      {"name": "Sucralfate syrup", "dosage": "2 tsp", "frequency": "three times daily", "duration": "10 days", "instructions": "before meals"},
+      {"name": "ORS powder", "dosage": null, "frequency": "as needed", "duration": null, "instructions": ""}
     ],
     "tests_or_followup": null,
     "red_flags": null,
-    "generic_advice": "Avoid spicy food and maintain hydration.",
-    "disclaimer": "This information is for general informational purposes only and does not constitute medical advice."
+    "generic_advice": "Maintain hydration; avoid irritants.",
+    "disclaimer": "Informational only; not a substitute for professional medical advice."
   }
 }
 ```
 
 ---
 
-### `POST /answer-query`
+### Answer Patient Query
 
-**Input**
+POST `/answer-query`
 
+- Answers a free‑text question. If you pass a `prescription_summary`, it is flattened into context. Also merges Indian‑meds hints when relevant.
+- Flow: safety prefilter → build merged context → medical model draft → refiner JSON → JSON extraction → Pydantic validation.
+
+Request (schema = `AnswerQueryRequest`):
 ```json
 {
-  "query": "Can I drink tea in the morning if I am taking Pantocid D before breakfast?",
+  "query": "Can I drink tea if I'm taking Pantocid D before breakfast?",
   "prescription_summary": {
     "summary": {
       "patient_name": "Suresh Kumar",
       "diagnosis_or_complaints": "Acute Gastritis",
       "medicines": [
-        {
-          "name": "Pantocid D",
-          "dosage": "40 mg",
-          "frequency": "once daily",
-          "duration": "7 days",
-          "instructions": "before breakfast"
-        },
-        {
-          "name": "Sucralfate syrup",
-          "dosage": "2 tsp",
-          "frequency": "three times daily",
-          "duration": "10 days",
-          "instructions": "before meals"
-        },
-        {
-          "name": "ORS powder",
-          "dosage": null,
-          "frequency": "as needed",
-          "duration": null,
-          "instructions": "for dehydration"
-        }
+        {"name": "Pantocid D", "dosage": "40 mg", "frequency": "once daily", "duration": "7 days", "instructions": "before breakfast"}
       ]
     }
   }
 }
 ```
 
-**Response**
-
+Response (schema = `AnswerQueryResponse`):
 ```json
 {
-  "answer": "Pantocid D should be taken on an empty stomach. Wait about 30 minutes before tea or breakfast. If stomach burning continues, consult your doctor.",
+  "answer": "Pantocid D should be taken on an empty stomach. Wait ~30 minutes before tea or breakfast.",
   "safety": {
     "disclaimer": "Informational only; not a substitute for professional medical advice.",
     "emergency": "If this is an emergency in India, call 112 or visit the nearest emergency department.",
     "version": "v1"
   },
   "sources": [
-    "Pantocid D (40 mg, once daily, 7 days, before breakfast)",
-    "Sucralfate syrup (2 tsp, three times daily, 10 days, before meals)"
+    "Pantocid D (40 mg, once daily, 7 days, before breakfast)"
   ]
 }
 ```
 
+---
 
-## 🔒 Safety Mechanisms
+## 🧩 Schemas (Pydantic)
 
-* **Prefilter**: Blocks unsafe queries (self-harm, overdose).
-* **Refiner**: GPT-OSS ensures consistent JSON + patient-friendly tone.
-* **Safety Footer**: Always appends disclaimers and India-specific emergency contact.
+- `SummarizeRequest`: `{ text: str (min 5), locale?: "en-IN" }`
+- `SummarizeResponse`: `{ summary: PrescriptionSummary }`
+- `PrescriptionSummary`:
+  - `patient_name?: str`
+  - `diagnosis_or_complaints?: str`
+  - `medicines: MedicineItem[]` where each item has `{ name: str, dosage?: str, frequency?: str, duration?: str, instructions?: str }`
+  - `tests_or_followup?: str`, `red_flags?: str`, `generic_advice?: str`, `disclaimer: str`
+- `AnswerQueryRequest`: `{ query: str (min 3), locale?: "en-IN", prescription_summary?: object }`
+- `AnswerQueryResponse`: `{ answer: str, safety: object, sources: string[] }`
+
+---
+
+## 🔐 Safety & Compliance
+
+- `prefilter()` blocks known harmful intents (e.g., self‑harm, overdose advice)
+- Every response includes `safety_footer()` with disclaimer + India emergency hint
+- Refiner enforces JSON structure; `json_extract.py` robustly pulls JSON from model text
+
+---
+
+## 🛠 Configuration Reference
+
+- `HF_TOKEN` (required): Hugging Face token for Inference API
+- `APP_HOST`, `APP_PORT`: server binding
+- `LOG_LEVEL`: DEBUG | INFO | WARNING | ERROR (Loguru)
+- `CORS_ORIGINS`: comma‑separated list or `*`
+
+---
+
+## 🧪 Testing
+
+Run smoke tests (extend as needed):
+```bash
+pytest -q
+```
+
+---
+
+## 🚀 Deployment Notes
+
+- Uvicorn/Gunicorn + FastAPI
+- Ensure `HF_TOKEN` is set as a secret
+- Restrict `CORS_ORIGINS` in production
+- Tune Hugging Face endpoint parameters (max tokens, temperature) in `models/*.py`
+
+---
+
+## 🧭 Troubleshooting
+
+- 502 from refiner: check `HF_TOKEN`, model availability, and confirm refiner returns valid JSON (see logs)
+- Empty/invalid JSON: `json_extract.py` now handles fenced blocks and tagged `<Answer>` wrappers; inspect raw text in logs if extraction fails
+- Import errors on startup: ensure environment is active and `requirements.txt` installed
+
+---
+
+## 📄 License
+
+This project is provided as part of Swaasthya Saathi. See repository license for terms.
 
 
