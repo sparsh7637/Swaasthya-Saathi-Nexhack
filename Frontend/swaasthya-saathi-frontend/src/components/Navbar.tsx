@@ -82,6 +82,7 @@ const Navbar = () => {
                 key={id}
                 onClick={() => scrollToSection(id)}
                 className="inline-flex items-center gap-2 text-foreground/80 hover:text-primary transition-colors duration-200 font-medium"
+                aria-label={`Go to ${name}`}
               >
                 <Icon className="h-4 w-4" />
                 <span>{name}</span>
@@ -100,7 +101,7 @@ const Navbar = () => {
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle menu"
           >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isOpen ? <X className="w-5 h-5" aria-hidden /> : <Menu className="w-5 h-5" aria-hidden />}
           </Button>
         </div>
 
