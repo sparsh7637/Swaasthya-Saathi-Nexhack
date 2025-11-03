@@ -36,9 +36,19 @@ const Header = () => {
         <Link to="/" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
           <motion.div
             whileHover={{ scale: 1.1, rotate: 5 }}
-            className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0"
+            className="relative w-12 h-12 md:w-14 md:h-14 rounded-2xl shadow-lg flex-shrink-0 overflow-hidden"
           >
-            <Heart className="h-5 w-5 md:h-6 md:w-6 text-white" fill="currentColor" />
+            {/* New logo by default */}
+            <img
+              src="/Dashboard LOGO.png"
+              alt="Swaasthya Saathi logo"
+              className="absolute inset-0 w-full h-full object-cover bg-transparent transition-opacity duration-300 group-hover:opacity-0 scale-110"
+              draggable={false}
+            />
+            {/* Old logo revealed on hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <Heart className="h-5 w-5 md:h-6 md:w-6 text-white" fill="currentColor" />
+            </div>
           </motion.div>
           <div className="flex flex-col justify-center min-w-0">
             <span className="text-lg md:text-2xl font-bold gradient-text leading-tight truncate">{strings.title}</span>
